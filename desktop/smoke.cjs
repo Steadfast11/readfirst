@@ -94,5 +94,9 @@ async function main() {
 
 main().catch((err) => {
   console.error('FAILED:', err.message)
+  for (const name of fs.existsSync(data) ? fs.readdirSync(data).filter((f) => f.endsWith('.log')) : []) {
+    console.error(`--- ${name}`)
+    console.error(fs.readFileSync(path.join(data, name), 'utf8').split('\n').slice(-25).join('\n'))
+  }
   process.exit(1)
 })

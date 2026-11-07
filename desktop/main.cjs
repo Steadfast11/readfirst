@@ -219,6 +219,7 @@ else {
     if (win) { win.restore(); win.focus() }
   })
   app.whenReady().then(start).catch((err) => {
+    try { fs.appendFileSync(dataPath('main.log'), `${new Date().toISOString()} ${err?.stack ?? err}\n`) } catch {}
     dialog.showErrorBox('Readfirst could not start', String(err?.message ?? err))
     app.quit()
   })

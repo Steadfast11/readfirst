@@ -3,7 +3,10 @@
   "productName": "Readfirst",
   "version": "0.1.0",
   "description": "Cold outreach that sends nothing until you read it.",
-  "author": "Readfirst contributors",
+  "author": {
+    "name": "Readfirst contributors",
+    "email": "296279005+Steadfast11@users.noreply.github.com"
+  },
   "license": "AGPL-3.0-only",
   "main": "main.cjs",
   "scripts": {
@@ -57,5 +60,6 @@
       "maintainer": "Readfirst contributors"
     },
     "afterPack": "./after-pack.cjs"
-  }
+  },
+  "homepage": "https://github.com/Steadfast11/readfirst"
 }
