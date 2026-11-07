@@ -90,9 +90,17 @@ async function startDatabase(password) {
   const dir = dataPath('database')
   const fresh = !fs.existsSync(path.join(dir, 'PG_VERSION'))
   const port = await freePort()
-  postgres = new EmbeddedPostgres({ databaseDir: dir, user: 'readfirst', password, port, persistent: true, onLog: () => {}, onError: () => {} })
-  if (fresh) await postgres.initialise()
-  await postgres.start()
+  const pgLog = (line) => { try { fs.appendFileSync(dataPath('postgres.log'), `${String(line).trimEnd()}\n`) } catch {} }
+  postgres = new EmbeddedPostgres({ databaseDir: dir, user: 'readfirst', password, port, persistent: true, onLog: pgLog, onError: pgLog })
+  const step = async (name, work) => {
+    try {
+      return await work()
+    } catch (err) {
+      throw new Error(`The database could not ${name}: ${err?.message ?? err ?? 'no reason given'}. See postgres.log in ${app.getPath('userData')}`)
+    }
+  }
+  if (fresh) await step('be created', () => postgres.initialise())
+  await step('start', () => postgres.start())
   if (fresh) await postgres.createDatabase('readfirst')
   const url = `postgres://readfirst:${password}@127.0.0.1:${port}/readfirst`
   const { Client } = require('pg')
@@ -209,9 +217,15 @@ async function start() {
   startServices()
   await waitForWeb()
   await session.defaultSession.cookies.set({ url: `http://127.0.0.1:${config.port}`, name: 'desktop_token', value: config.token, httpOnly: true, sameSite: 'strict' })
-  await win.loadURL(`http://127.0.0.1:${config.port}/projects`)
+  // A navigation that replaces this one is fine, not a failed start.
+  await win.loadURL(`http://127.0.0.1:${config.port}/projects`).catch((err) => {
+    if (!String(err?.message).includes('ERR_ABORTED')) throw err
+  })
   watchSettings()
 }
+
+// Ending the app from outside still stops its database and services cleanly.
+for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => app.quit())
 
 if (!app.requestSingleInstanceLock()) app.quit()
 else {
