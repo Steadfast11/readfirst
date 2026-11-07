@@ -1,0 +1,96 @@
+/* Rules that sit outside the generated token files. */
+body {
+  overflow-wrap: anywhere;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Readfirst: warm graphite, ivory, hairlines. No glow and no gradients. Movement is the only flourish. */
+:root { color-scheme: dark; --ease: cubic-bezier(.32, .72, 0, 1); --spring: cubic-bezier(.34, 1.3, .64, 1); }
+::selection { background: var(--color-text); color: var(--color-paper); }
+h1, h2, h3 { text-wrap: balance; }
+html { scrollbar-color: var(--color-border-input) transparent; }
+.wide { font-weight: 400; letter-spacing: -.015em; }
+h1.wide { font-size: 38px; line-height: 44px; font-weight: 300; letter-spacing: -.022em; }
+.wordmark { font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; }
+
+.material { background: var(--color-paper); }
+.chrome { view-transition-name: chrome; border-right: 1px solid var(--color-border); }
+.dock { view-transition-name: dock; border-top: 1px solid var(--color-border); }
+
+.sheet {
+  background: var(--color-paper);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color .5s var(--ease);
+}
+.sheet:hover { border-color: #3d3a34; }
+ul.sheet, ol.sheet { overflow: hidden; }
+
+.perforated { border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.stub + .stub { border-left: 1px solid var(--color-border); }
+@media (max-width: 767px) { .stub + .stub { border-left: 0; } }
+
+/* The step you are on carries the one solid shape on the page, and it moves when you advance. */
+.lit { position: relative; color: var(--color-paper); }
+.lit-glow { position: absolute; inset: 5px; border-radius: 11px; z-index: 0; background: var(--color-text); }
+
+.form-box {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 9px 14px 7px;
+  transition: border-color .35s var(--ease), background .35s var(--ease);
+}
+.form-box:hover { border-color: #3d3a34; }
+.form-box:focus-within { border-color: var(--color-text); background: var(--color-surface); }
+.form-box:has([aria-invalid='true']) { border-color: var(--color-danger); }
+.form-box label { display: block; font-size: 12px; line-height: 16px; color: var(--color-text-muted); }
+.form-box input, .form-box textarea {
+  display: block; width: 100%; min-height: 28px; background: transparent; border: 0; outline: 0; padding: 0;
+  font-size: 15px; line-height: 22px; color: var(--color-text);
+}
+.form-box input::placeholder, .form-box textarea::placeholder { color: var(--color-text-muted); }
+.form-box input:disabled { color: var(--color-text-muted); }
+
+.nav-link { position: relative; transition: color .35s var(--ease); }
+.nav-link > :not(.nav-pill) { position: relative; z-index: 1; }
+.nav-pill { position: absolute; inset: 0; z-index: 0; border-radius: var(--radius-md); background: var(--color-surface-hover); }
+.tab-pill { position: absolute; inset: 0; z-index: 0; border-radius: 999px; background: var(--color-text); }
+
+/* Content settles into place, one piece after another. */
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+main > * { animation: rise .8s var(--ease) both; }
+main > :nth-child(2) { animation-delay: 60ms; }
+main > :nth-child(3) { animation-delay: 120ms; }
+main > :nth-child(4) { animation-delay: 180ms; }
+main > :nth-child(n + 5) { animation-delay: 240ms; }
+.sheet > li { animation: rise .7s var(--ease) both; }
+.sheet > li:nth-child(2) { animation-delay: 50ms; }
+.sheet > li:nth-child(3) { animation-delay: 100ms; }
+.sheet > li:nth-child(4) { animation-delay: 150ms; }
+.sheet > li:nth-child(n + 5) { animation-delay: 200ms; }
+
+@keyframes pop-in { from { opacity: 0; transform: scale(.96) translateY(8px); } }
+@keyframes fade-in { from { opacity: 0; } }
+.dialog-overlay { background: rgba(0, 0, 0, .62); animation: fade-in .35s var(--ease); }
+.dialog-pop { animation: pop-in .5s var(--spring); }
+
+/* Moving between pages. Named parts morph on their own; the rest dissolves. */
+::view-transition-group(*) { animation-duration: .6s; animation-timing-function: var(--ease); }
+::view-transition-old(root) { animation: vt-out .28s var(--ease) both; }
+::view-transition-new(root) { animation: vt-in .55s var(--ease) both; }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(6px); } }
+::view-transition-group(chrome), ::view-transition-group(dock) { animation: none; }
+::view-transition-old(chrome), ::view-transition-old(dock) { display: none; }
+::view-transition-new(chrome), ::view-transition-new(dock) { animation: none; }
+
+.drag { position: fixed; inset: 0 0 auto 0; height: 34px; z-index: 50; -webkit-app-region: drag; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after, ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; transition: none !important; }
+}

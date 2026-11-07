@@ -1,0 +1,25 @@
+# Self-hosting: fill in .env.production first (see .env.example).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: outreach
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+  web:
+    build: .
+    env_file: .env.production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  worker:
+    build: .
+    command: ["npx", "tsx", "src/worker/index.ts"]
+    env_file: .env.production
+    depends_on:
+      - db
+volumes:
+  pgdata:

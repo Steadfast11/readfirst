@@ -1,0 +1,61 @@
+{
+  "name": "readfirst-desktop",
+  "productName": "Readfirst",
+  "version": "0.1.0",
+  "description": "Cold outreach that sends nothing until you read it.",
+  "author": "Readfirst contributors",
+  "license": "AGPL-3.0-only",
+  "main": "main.cjs",
+  "scripts": {
+    "bundle": "node prepare.cjs",
+    "dev": "electron .",
+    "dist": "npm run bundle && electron-builder --publish never"
+  },
+  "dependencies": {
+    "embedded-postgres": "16.15.0-beta.19",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "app.readfirst.desktop",
+    "asar": false,
+    "files": [
+      "main.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../db/migrations",
+        "to": "migrations"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.business",
+      "identity": null
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "maintainer": "Readfirst contributors"
+    },
+    "afterPack": "./after-pack.cjs"
+  }
+}
