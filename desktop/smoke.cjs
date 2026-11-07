@@ -38,10 +38,15 @@ async function launch() {
   throw new Error('The app never reached the projects page')
 }
 
-async function close({ child, browser }) {
-  child.kill()
-  await sleep(5000)
+/** Closes the window the way a person does, so the app shuts its database down cleanly. */
+async function close({ child, browser, page }) {
+  const exited = new Promise((done) => child.once('exit', done))
+  await page.evaluate(() => window.close()).catch(() => {})
+  const clean = await Promise.race([exited.then(() => true), sleep(30000).then(() => false)])
+  if (!clean) child.kill()
+  check(clean, 'closing the window quits the app')
   await browser.close().catch(() => {})
+  await sleep(1000)
 }
 
 const call = (page, url, init) => page.evaluate(async ([u, i]) => (await fetch(u, i)).json(), [url, init])
