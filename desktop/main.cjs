@@ -111,6 +111,8 @@ async function startDatabase(password) {
       child.once('error', fail)
       child.once('exit', (code) => (code === 0 ? done() : fail(new Error(`pg_ctl ${args[0]} ended with code ${code}`))))
     })
+    // A server left running by a copy of the app that was ended by force holds the folder. Stop it first.
+    await run(['stop', '-D', dir, '-m', 'fast', '-w']).catch(() => {})
     await step('start', () => run(['start', '-D', dir, '-o', `-p ${port}`, '-l', dataPath('postgres.log'), '-w', '-t', '60']))
     stopDatabase = () => run(['stop', '-D', dir, '-m', 'fast', '-w'])
   } else {
