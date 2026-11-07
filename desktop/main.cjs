@@ -1,5 +1,5 @@
 const { app, BrowserWindow, dialog, nativeTheme, safeStorage, session, shell } = require('electron')
-const { spawn } = require('node:child_process')
+const { execFile, spawn } = require('node:child_process')
 const crypto = require('node:crypto')
 const fs = require('node:fs')
 const http = require('node:http')
@@ -16,6 +16,7 @@ const migrationsDir = app.isPackaged ? path.join(resources, 'migrations') : path
 
 let win = null
 let postgres = null
+let stopDatabase = async () => {}
 let quitting = false
 let config = null
 const children = {}
@@ -100,7 +101,17 @@ async function startDatabase(password) {
     }
   }
   if (fresh) await step('be created', () => postgres.initialise())
-  await step('start', () => postgres.start())
+  if (process.platform === 'win32') {
+    // Postgres refuses to run with administrator rights. pg_ctl starts it with those rights removed,
+    // so it also works for people who run the app as an administrator.
+    const pgCtl = path.join(path.dirname(require.resolve('@embedded-postgres/windows-x64/package.json')), 'native', 'bin', 'pg_ctl.exe')
+    const run = (args) => new Promise((done, fail) => execFile(pgCtl, args, { windowsHide: true }, (err, out, errOut) => (err ? fail(new Error(String(errOut || out || err.message).trim())) : done())))
+    await step('start', () => run(['start', '-D', dir, '-o', `-p ${port}`, '-l', dataPath('postgres.log'), '-w', '-t', '60']))
+    stopDatabase = () => run(['stop', '-D', dir, '-m', 'fast', '-w'])
+  } else {
+    await step('start', () => postgres.start())
+    stopDatabase = () => postgres.stop()
+  }
   if (fresh) await postgres.createDatabase('readfirst')
   const url = `postgres://readfirst:${password}@127.0.0.1:${port}/readfirst`
   const { Client } = require('pg')
@@ -243,7 +254,7 @@ else {
     event.preventDefault()
     quitting = true
     await stopServices().catch(() => {})
-    await postgres?.stop().catch(() => {})
+    await stopDatabase().catch(() => {})
     app.exit(0)
   })
 }
