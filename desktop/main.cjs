@@ -104,7 +104,7 @@ async function startDatabase(password) {
   if (process.platform === 'win32') {
     // Postgres refuses to run with administrator rights. pg_ctl starts it with those rights removed,
     // so it also works for people who run the app as an administrator.
-    const pgCtl = path.join(path.dirname(require.resolve('@embedded-postgres/windows-x64/package.json')), 'native', 'bin', 'pg_ctl.exe')
+    const pgCtl = path.join(path.dirname(require.resolve('@embedded-postgres/windows-x64')), '..', 'native', 'bin', 'pg_ctl.exe')
     const run = (args) => new Promise((done, fail) => execFile(pgCtl, args, { windowsHide: true }, (err, out, errOut) => (err ? fail(new Error(String(errOut || out || err.message).trim())) : done())))
     await step('start', () => run(['start', '-D', dir, '-o', `-p ${port}`, '-l', dataPath('postgres.log'), '-w', '-t', '60']))
     stopDatabase = () => run(['stop', '-D', dir, '-m', 'fast', '-w'])
